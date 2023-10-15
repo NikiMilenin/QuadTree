@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Iterator;
 
 public class QuadTree
 {
@@ -16,12 +17,18 @@ public class QuadTree
         dots = new ArrayList<>();
         this.level = level;
         this.boundry = new AABB(new Dot(0, 0), width, height);
+        this.northWest = null;
+        this.northWest = null;
     }
 
     public QuadTree(int level, AABB boundary) {
         this.level = level;
         this.boundry = boundary;
         dots = new ArrayList<>();
+    }
+
+    public ArrayList<Dot> getDots() {
+        return dots;
     }
 
     public void subdivide() {
@@ -32,9 +39,9 @@ public class QuadTree
 
 
         northWest = new QuadTree(this.level + 1, new AABB(this.boundry.getTopLeft(), center));
-        northEast = new QuadTree(this.level + 1, new AABB(new Dot(center.getX() + new_width, center.getY()),
+        northEast = new QuadTree(this.level + 1, new AABB(new Dot(center.getX() , this.boundry.getTopLeft().getY()),
                 new_width, new_height));
-        southWest = new QuadTree(this.level + 1, new AABB(new Dot(center.getX(), center.getY() + new_width),
+        southWest = new QuadTree(this.level + 1, new AABB(new Dot(this.boundry.getTopLeft().getX(), center.getY()),
                 new_width, new_height));
         southEast = new QuadTree(this.level + 1, new AABB(center, new_width, new_height));
     }
@@ -43,11 +50,16 @@ public class QuadTree
         if (!this.boundry.inRange(x, y)) {
             return;
         }
+
         Dot new_dot = new Dot(x, y);
+        for (Dot d:dots) {
+            if (d.getX() == new_dot.getX() && d.getY() == new_dot.getY()) return;
+        }
         if (dots.size() < nodeCapacity) {
             dots.add(new_dot);
             return;
         }
+
         if (northWest == null) subdivide();
         if (this.northWest.boundry.inRange(x, y))
             this.northWest.insert(x, y);
@@ -58,14 +70,23 @@ public class QuadTree
         else if (this.southEast.boundry.inRange(x, y))
             this.southEast.insert(x, y);
         else
-            System.out.printf("ERROR : Unhandled partition %d %d", x, y);
+            System.out.printf("ERROR : Unhandled partition %d %d\n", x, y);
     }
 
-    public static void DFS(QuadTree tree) {
-        if (tree == null) return;
-        DFS(tree.northWest);
-        DFS(tree.northEast);
-        DFS(tree.southWest);
-        DFS(tree.northEast);
+    public ArrayList<Dot> DFS() {
+        ArrayList<Dot> result = new ArrayList<>();
+        DFSIteration(this, result);
+        return result;
     }
+
+    private void DFSIteration(QuadTree tree, ArrayList<Dot> result) {
+        if (tree == null) return;
+        result.addAll(tree.getDots());
+
+        DFSIteration(tree.northWest, result);
+        DFSIteration(tree.northEast, result);
+        DFSIteration(tree.southWest, result);
+        DFSIteration(tree.southEast, result);
+    }
+
 }
