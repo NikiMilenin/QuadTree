@@ -1,11 +1,11 @@
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Stack;
 
-public class QuadTree
-{
+public class QuadTree {
     private final int nodeCapacity = 1;
     int level = 0;
-    private ArrayList<Dot> dots;
+    private Dot dot;
 
     private QuadTree northWest;
     private QuadTree northEast;
@@ -14,7 +14,7 @@ public class QuadTree
     private AABB boundry;
 
     public QuadTree(int level, double width, double height) {
-        dots = new ArrayList<>();
+        this.dot = null;
         this.level = level;
         this.boundry = new AABB(new Dot(0, 0), width, height);
         this.northWest = null;
@@ -24,11 +24,7 @@ public class QuadTree
     public QuadTree(int level, AABB boundary) {
         this.level = level;
         this.boundry = boundary;
-        dots = new ArrayList<>();
-    }
-
-    public ArrayList<Dot> getDots() {
-        return dots;
+        this.dot = null;
     }
 
     public void subdivide() {
@@ -46,17 +42,12 @@ public class QuadTree
         southEast = new QuadTree(this.level + 1, new AABB(center, new_width, new_height));
     }
 
-    public void insert(int x, int y) {
+    public void insert(double x, double y) {
         if (!this.boundry.inRange(x, y)) {
             return;
         }
-
-        Dot new_dot = new Dot(x, y);
-        for (Dot d:dots) {
-            if (d.getX() == new_dot.getX() && d.getY() == new_dot.getY()) return;
-        }
-        if (dots.size() < nodeCapacity) {
-            dots.add(new_dot);
+        if (dot == null) {
+            dot = new Dot(x, y);
             return;
         }
 
@@ -73,6 +64,25 @@ public class QuadTree
             System.out.printf("ERROR : Unhandled partition %d %d\n", x, y);
     }
 
+    public void delete(int x, int y) {
+        if (!this.boundry.inRange(x, y)) {
+            return;
+        }
+        if (dot.getX() - x <= 1e-25 && dot.getY() - y <= 1e-25) {
+            dot = null;
+            return;
+        }
+
+        if (this.northWest != null && this.northWest.boundry.inRange(x, y))
+            this.northWest.insert(x, y);
+        else if (this.northEast != null && this.northEast.boundry.inRange(x, y))
+            this.northEast.insert(x, y);
+        else if (this.southWest.boundry.inRange(x, y))
+            this.southWest.insert(x, y);
+        else if (this.southEast.boundry.inRange(x, y))
+            this.southEast.insert(x, y);
+    }
+
     public ArrayList<Dot> DFS() {
         ArrayList<Dot> result = new ArrayList<>();
         DFSIteration(this, result);
@@ -81,12 +91,11 @@ public class QuadTree
 
     private void DFSIteration(QuadTree tree, ArrayList<Dot> result) {
         if (tree == null) return;
-        result.addAll(tree.getDots());
+        result.add(dot);
 
         DFSIteration(tree.northWest, result);
         DFSIteration(tree.northEast, result);
         DFSIteration(tree.southWest, result);
         DFSIteration(tree.southEast, result);
     }
-
 }

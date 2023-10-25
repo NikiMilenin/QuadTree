@@ -55,7 +55,7 @@ public class AABB {
                 this.getTop()  >= otherBox.getBottom() || this.getBottom() <= otherBox.getTop());
     }
 
-    public boolean inRange(int x, int y) {
+    public boolean inRange(double x, double y) {
         return (x >= this.getLeft() && x <= this.getRight()
                 && y >= this.getTop() && y <= this.getBottom());
     }

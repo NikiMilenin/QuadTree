@@ -4,13 +4,12 @@ public class Main {
         tree.insert(210, 470);
         tree.insert(470, 210);
         tree.insert(210, 470);
-        tree.insert(210, 470);
-        tree.insert(210, 470);
-
 
 
         for (Dot t:tree.DFS()) {
             System.out.println("X: " + t.getX() + " Y: " + t.getY() );
         }
+
+
     }
 }

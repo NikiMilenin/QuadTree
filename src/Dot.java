@@ -21,8 +21,8 @@ public class Dot
         y  += otherDot.y;
     }
 
-    public void divide(Dot otherDot) {
-        x  /= otherDot.x;
-        y  /= otherDot.y;
+    public void sub(Dot otherDot) {
+        x  -= otherDot.x;
+        y  -= otherDot.y;
     }
 }
